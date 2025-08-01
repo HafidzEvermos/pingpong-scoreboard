@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ping Pong Counter</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+  <style>
+    html, body {
+      height: 100%;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 h-full flex flex-col">
+  <h1 class="text-5xl font-bold text-center mt-6 mb-4 flex-shrink-0">Ping Pong Scoreboard</h1>
+  <div class="flex flex-1 max-h-full">
+    <!-- Team A -->
+    <div class="bg-red-100 flex flex-col justify-center items-center w-1/2 p-6 gap-10 select-none">
+      <div class="flex flex-col items-center gap-6">
+        <div class="flex items-center gap-4 justify-center">
+          <span id="serverA1" class="text-5xl hidden select-none">🎯</span>
+          <input id="nameA1" class="text-4xl font-semibold border-b border-red-400 bg-transparent w-48 text-center focus:outline-none" value="Hafidz" />
+        </div>
+        <div class="flex items-center gap-4 justify-center">
+          <span id="serverA2" class="text-5xl hidden select-none">🎯</span>
+          <input id="nameA2" class="text-4xl font-semibold border-b border-red-400 bg-transparent w-48 text-center focus:outline-none" value="Rizky" />
+        </div>
+      </div>
+      <div id="scoreA" class="text-9xl font-extrabold my-6 select-none">0</div>
+      <div class="flex gap-6">
+        <button onclick="updateScore('A', 1)" class="bg-white rounded-xl px-8 py-4 shadow text-4xl font-bold select-none">+</button>
+        <button onclick="updateScore('A', -1)" class="bg-white rounded-xl px-8 py-4 shadow text-4xl font-bold select-none">-</button>
+      </div>
+    </div>
+
+    <!-- Team B -->
+    <div class="bg-blue-100 flex flex-col justify-center items-center w-1/2 p-6 gap-10 select-none">
+      <div class="flex flex-col items-center gap-6">
+        <div class="flex items-center gap-4 justify-center">
+          <span id="serverB1" class="text-5xl hidden select-none">🎯</span>
+          <input id="nameB1" class="text-4xl font-semibold border-b border-blue-400 bg-transparent w-48 text-center focus:outline-none" value="Budi" />
+        </div>
+        <div class="flex items-center gap-4 justify-center">
+          <span id="serverB2" class="text-5xl hidden select-none">🎯</span>
+          <input id="nameB2" class="text-4xl font-semibold border-b border-blue-400 bg-transparent w-48 text-center focus:outline-none" value="Yoga" />
+        </div>
+      </div>
+      <div id="scoreB" class="text-9xl font-extrabold my-6 select-none">0</div>
+      <div class="flex gap-6">
+        <button onclick="updateScore('B', 1)" class="bg-white rounded-xl px-8 py-4 shadow text-4xl font-bold select-none">+</button>
+        <button onclick="updateScore('B', -1)" class="bg-white rounded-xl px-8 py-4 shadow text-4xl font-bold select-none">-</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Controls -->
+  <div class="flex gap-6 mt-6 justify-center flex-shrink-0 px-4 pb-6">
+    <button onclick="undo()" class="bg-yellow-200 rounded-xl px-8 py-3 shadow text-3xl font-semibold select-none">↺ Undo</button>
+    <button onclick="reset()" class="bg-gray-300 rounded-xl px-8 py-3 shadow text-3xl font-semibold select-none">⏹ Reset</button>
+    <button onclick="switchServerManually()" class="bg-green-300 rounded-xl px-8 py-3 shadow text-3xl font-semibold select-none">🔁 Switch Server</button>
+  </div>
+
+  <script>
+    const serverRotation = ['A1', 'B1', 'A2', 'B2'];
+    let scoreA = 0;
+    let scoreB = 0;
+    let rotationIndex = 0;
+    let history = [];
+
+    function updateScore(team, delta) {
+      history.push({ scoreA, scoreB, rotationIndex });
+
+      if (team === 'A') {
+        scoreA = Math.max(0, scoreA + delta);
+      } else {
+        scoreB = Math.max(0, scoreB + delta);
+      }
+
+      const newTotal = scoreA + scoreB;
+      const prevTotal = history[history.length - 1].scoreA + history[history.length - 1].scoreB;
+
+      if (Math.floor(newTotal / 2) > Math.floor(prevTotal / 2)) {
+        rotationIndex = (rotationIndex + 1) % serverRotation.length;
+      }
+
+      render();
+    }
+
+    function undo() {
+      const last = history.pop();
+      if (last) {
+        scoreA = last.scoreA;
+        scoreB = last.scoreB;
+        rotationIndex = last.rotationIndex;
+        render();
+      }
+    }
+
+    function reset() {
+      scoreA = 0;
+      scoreB = 0;
+      rotationIndex = 0;
+      history = [];
+      render();
+    }
+
+    function switchServerManually() {
+      rotationIndex = (rotationIndex + 1) % serverRotation.length;
+      render();
+    }
+
+    function render() {
+      document.getElementById('scoreA').innerText = scoreA;
+      document.getElementById('scoreB').innerText = scoreB;
+
+      ['A1', 'A2', 'B1', 'B2'].forEach(code => {
+        const el = document.getElementById('server' + code);
+        if (el) el.classList.add('hidden');
+      });
+
+      const serverCode = serverRotation[rotationIndex % serverRotation.length];
+      const serverEl = document.getElementById('server' + serverCode);
+      if (serverEl) serverEl.classList.remove('hidden');
+    }
+
+    render();
+  </script>
+</body>
+</html>
